@@ -1,0 +1,43 @@
+muestra que esta corriendo en el puerto 3306
+sudo lsof -i :3306
+
+Y si ves algo como mysqld, detenlo con:
+sudo systemctl stop mariadb
+
+    # comando para ejecutar la migración de la base de datos y luego iniciar el servidor Apache
+    # Se espera a que la base de datos esté disponible antes de ejecutar las migraciones
+
+comando para entrar al contendor de mysql
+
+docker exec -it fintech-db mariadb -u root -p
+
+comando para entrar al contendor de api(laravel) y correr las migraciones y limpia cache
+docker exec -it fintech-api bash
+php artisan migrate
+php artisan config:clear
+php artisan config:cache
+
+comando que ingresa al contendor de api y muestra el losg y muestra las rutas
+docker exec -it fintech-api bash
+tail -n 50 storage/logs/laravel.log
+php artisan route:list | grep transacciones
+
+comando que reinicia el contendor de laravel
+
+docker-compose restart api
+
+comando que elimina los contendores
+
+docker-compose down -v #con -v elimina tambien los volumenes
+docker-compose up -d --build  up levanta los servicios definidos, -d no bloquea el terminal, --build reconstruye la imagenes de docker desde lso dockerfile
+
+comandos para verificar contendores, volumenes y redes
+docker ps -a
+docker volume ls
+docker network ls
+
+mostrar el log de un contenedor --api
+docker logs fintech-api
+
+transformar el archivo a formato de Windows (CRLF) y no de Unix (LF)
+dos2unix gestion-financiera-api/entrypoint.sh

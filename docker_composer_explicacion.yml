@@ -1,0 +1,53 @@
+version: '3.8'  # Especificamos la versión del esquema de Docker Compose
+
+services:
+  db:  # Definimos el servicio de la base de datos
+    build:
+      context: ./gestion-financiera-bd  # Usamos el Dockerfile que está en esta carpeta
+    container_name: fintech-db  # Nombre personalizado del contenedor para identificarlo fácilmente
+    restart: always  # Reiniciar automáticamente si el contenedor se detiene
+    environment:  # Variables de entorno para inicializar MariaDB
+      MARIADB_DATABASE: gestion  # Nombre de la base de datos por defecto
+      MARIADB_USER: root  # Usuario de la base de datos
+      MARIADB_PASSWORD: dan007  # Contraseña del usuario
+      MARIADB_ROOT_PASSWORD: dan007  # Contraseña del usuario root
+    ports:
+      - "3306:3306"  # Expone el puerto 3306 del contenedor al host
+    volumes:
+      - db_data:/var/lib/mysql  # Volumen persistente para guardar los datos de la base de datos
+    networks:
+      - fintech-network  # Conecta el contenedor a la red personalizada
+
+  api:  # Servicio para la API de Laravel
+    build:
+      context: ./gestion-financiera-api  # Carpeta que contiene el Dockerfile de Laravel
+    container_name: fintech-api
+    restart: always
+    ports:
+      - "8000:80"  # El puerto 8000 de tu máquina apuntará al 80 del contenedor Apache
+    volumes:
+      - ./gestion-financiera-api:/var/www/html  # Para desarrollo: sincroniza el código local con el contenedor
+    depends_on:
+      - db  # Este servicio depende del contenedor de base de datos
+    networks:
+      - fintech-network  # Usa la misma red para que pueda comunicarse con la base de datos
+  
+  frontend:  # Servicio para el frontend en Vue 3
+    build:
+      context: ./gestion-financiera-frontend  # Carpeta que contiene el Dockerfile de Vue
+    container_name: fintech-frontend
+    restart: always
+    ports:
+      - "8080:80"  # El puerto 8080 de tu máquina apunta al puerto 80 de Nginx en el contenedor
+    depends_on:
+      - api  # El frontend depende de que el backend esté activo
+    networks:
+      - fintech-network  # Usa la misma red para que pueda comunicarse con la API
+
+volumes:
+  db_data:  # Definimos el volumen llamado "db_data" para la persistencia de datos
+
+networks:
+  fintech-network:  # Creamos una red personalizada para comunicar los servicios
+    driver: bridge  # Usamos el controlador de red "bridge"
+
